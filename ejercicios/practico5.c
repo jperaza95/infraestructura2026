@@ -10,9 +10,9 @@ sem_t mutex, empty, fill; //mutex, vacio y lleno
 int first, last, size;
 int buffer[10];
 
-void insert(int *v)
+void insert(int v)
 {
-    buffer[last] = *v; //Se inserta v en el buffer. Analogo a la clase, last es "proximo a insertar."
+    buffer[last] = v; //Se inserta v en el buffer. Analogo a la clase, last es "proximo a insertar."
     last++; 
     last = last % 10;  // usamos modulo para no salirnos del buffer.
 }
@@ -31,16 +31,16 @@ void consume(int cons) //extrae "first" e imprime en pantalla.
     printf("\nConsumer %d consumed %d \n", cons, e); 
 }
 
-int *produce(int *prod) // 
+int produce(int * prod) // 
 {
     int p = rand() % 11;
     printf("Producer %d produced %d \n", *prod, p);
-    return &p;  // retorna un int que será el productor.
+    return p;  // retorna un int que será el productor.
 }
 
-void *consumer(void *arg)
+void* consumer(void *arg)
 {
-    int *consumer = (int *)arg;
+    int* consumer = (int *)arg;
     while (1)
     {
         sem_wait(&fill);    //P(lleno), sem_fill empieza en 0. Si esta en cero, esperamos a que el productor produzca algo.
@@ -53,16 +53,16 @@ void *consumer(void *arg)
     return NULL;
 }
 
-void *producer(void *arg)
+void* producer(void *arg)
 {
+    int* productor = (int *)arg;
+
     while (1)
     {
-        int *productor = (int *)arg;
-        int *product = produce(*productor);
+        int product = produce(productor);
         sem_wait(&empty); //P(Vacio), sem_empty empieza en 10, le resto uno.
         sem_wait(&mutex);
-        insert(product);
-        // critical section
+        insert(product); // critical section
         sem_post(&mutex); 
         sem_post(&fill); //V(lleno). Sumo 1 al semaforo "lleno", que empieza en cero.
         sleep(1 + rand() % 3);
